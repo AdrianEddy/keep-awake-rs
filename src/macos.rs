@@ -16,7 +16,7 @@ pub type IOPMAssertionId = u32;
 // const K_IOPMASSERTION_LEVEL_OFF : IOPMAssertionLevel = 0;
 const K_IOPMASSERTION_LEVEL_ON: IOPMAssertionLevel = 255;
 
-extern "C" {
+unsafe extern "C" {
     pub fn IOPMAssertionCreateWithName(
         assertion_type: CFStringRef,
         assertion_level: IOPMAssertionLevel,
