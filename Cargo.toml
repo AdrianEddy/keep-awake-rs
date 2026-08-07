@@ -11,11 +11,19 @@ log = "0.4"
 "zbus" = "5.13.1"
 
 [target.'cfg(target_os="windows")'.dependencies]
-windows = { version = "0.62", features = ["Win32_System_Power"] }
+# Win32_System_Threading is needed twice over: it carries REASON_CONTEXT, and
+# PowerCreateRequest is itself `#[cfg(feature = "Win32_System_Threading")]`.
+# Win32_System_SystemServices carries POWER_REQUEST_CONTEXT_VERSION, and is worth its
+# keep: pulling in that module for the one constant measured at 60 ms of `cargo check`
+# and 1 MB of artifacts, which does not buy hand-copying an SDK value.
+# Win32_Foundation (HANDLE, CloseHandle) is already implied — Win32_System_Power ->
+# Win32_System -> Win32 -> Win32_Foundation — and is listed only because src/windows.rs
+# imports from it directly.
+# The default `std` feature must stay on: it is what gives `windows::core::Error` its
+# `std::error::Error` impl, which src/windows.rs needs to `?` it into a `Box<dyn Error>`.
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Power", "Win32_System_SystemServices", "Win32_System_Threading"] }
 
 [target.'cfg(target_os="macos")'.dependencies]
-libc = "0.2"
-mach = "0.3.2"
 core-foundation = "0.10.1"
 
 [target.'cfg(target_os = "android")'.dependencies]
